@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -21,7 +21,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 chunks = text_splitter.split_documents(document)
 
 print("Creating vector DB..")
-embeddings = GoogleGenerativeAIEmbeddings(model = "gemini-embedding-001")
+embeddings = OllamaEmbeddings(model = "embeddinggemma")
 vector_db = Chroma.from_documents(
     documents = chunks,
     embedding = embeddings,
@@ -38,7 +38,7 @@ Answer:
 """
 prompt = PromptTemplate.from_template(template)
 
-llm = ChatGoogleGenerativeAI(model = "gemini-3.8-flash", temperature=0)
+llm = ChatOllama(model = "gemma4:e2b", temperature=0)
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -49,23 +49,12 @@ rag_chain = (
     | llm
 )
 
-user_question = "What is APISEC?"
-
-print("\nQuestion:", user_question, flush=True)
-
-print("\n1. Testing retrieval...", flush=True)
-
-retrieved_docs = retriever.invoke(user_question)
-
-print("2. Retrieval completed!", flush=True)
-print("Retrieved chunks:", len(retrieved_docs))
-
-for doc in retrieved_docs:
-    print(doc.page_content)
-
-print("\n3. Sending request to Gemini...", flush=True)
-
-response = rag_chain.invoke(user_question)
-
-print("\n4. Gemini responded!", flush=True)
-print("Answer:", response.content, flush=True)
+question = ""
+while(question != "exit"):
+    question = input("Enter question: ")
+    if question == "exit":
+        break
+    response = rag_chain.invoke(question)
+    print("model thinking..")
+    print(response.usage_metadata)
+    print(response.content)
