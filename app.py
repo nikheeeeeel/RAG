@@ -7,7 +7,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 
-load_dotenv()
+
 
 print("Loading PDF..")
 loader = PyPDFLoader("NikhilKishore_Resume.pdf")
